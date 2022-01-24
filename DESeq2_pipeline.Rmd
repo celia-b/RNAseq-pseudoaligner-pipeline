@@ -1,0 +1,266 @@
+---
+title: "Differential Expression Analysis with DESeq2 - a basic pipeline"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=TRUE, results = 'hide', error=FALSE, warning=FALSE, message=FALSE}
+# BiocManager::install("DESeq2")
+# BiocManager::install("pasilla")
+# BiocManager::install('apeglm')
+# BiocManager::install('vsn')
+# BiocManager::install('ashr')
+
+library(DESeq2) 
+library(ggplot2)
+library(RColorBrewer)
+library(gplots)
+library(vsn)
+library(pheatmap)
+library(tidyverse)
+library(broom)
+library(ashr)
+```
+
+## 1. Input data
+
+Input data are:
+  1. The *read counts* per gene and sample (output of the kallisto pipeline: merged_samples.tsv)
+  2. The *sample data* as a dataframe with info on the conditions upon which the differential expression analysis will be performed (a csv with samples as rows and conditions as columns)
+  
+```{r}
+counts_file <- 'C:/Users/celib/Desktop/DENMARK/DTU/3-SEMESTER/Special_Course/data/DESeq2/kallisto_gene_counts.tsv'
+samples_file <- 'C:/Users/celib/Desktop/DENMARK/DTU/3-SEMESTER/Special_Course/data/DESeq2/conditionTable.csv'
+
+
+counts <- read.csv(counts_file, 
+               sep="\t",
+               row.names="gene_name")
+samples <- read.csv(samples_file, 
+                    sep=';',
+                    row.names=1)
+```
+
+#### 1.1. Filtering and formatting
+
+Do you need to *filter* your samples? You must do so from both the samples and counts tables.
+  - In this example, we need to filter for samples with condition ´wormCount´ equal to 0, 1, 2 or 3.
+  
+*Attention: do you want to filter out samples that you found are outliers in the analysis below? You can do that here (see comments).*
+
+```{r}
+samples <- samples %>%
+  filter(wormCount <= 3)
+
+samples <- samples[!(row.names(samples) == 'S176'), ] # comment out this step if you don't need to remove outliers or modify it to fit your study
+
+counts <- counts %>%
+  select(row.names(samples))
+```
+
+The ´counts´ data must be in matrix form, with _i_ genes as rows and _j_ samples as columns.
+
+```{r}
+counts <- as.matrix(counts) 
+mode(counts) <- "integer"
+```
+
+In the ´samples´ dataframe:
+  - Conditions must be factors or numeric. If numeric, we are specifying a model with increasing fold change for higher values. In this example we choose factors.
+  - Samples (in rows) must be ordered like in counts matrix (in columns).
+
+```{r}
+# To factors
+samples$wormCount <- factor(samples$wormCount)
+samples$histologicalStage <- factor(samples$histologicalStage)
+
+# Order samples in coldata like columns in cts
+counts <- counts[, rownames(samples)]
+all(rownames(samples) == colnames(counts))
+```
+
+
+## 2. DESeq dataset
+
+Now we can build the *DESeq dataset*. You can specify the design of the model as a function of any of the conditions in the samples dataframe. In this example we choose the ´histologicalStage´.
+
+```{r}
+my_dds <- DESeqDataSetFromMatrix(countData = counts,
+                                 colData = samples,
+                                 design = ~ histologicalStage)
+my_dds
+```
+
+
+## 3. Data transformations and visualization
+
+### 3.1. Normalization of the variance
+
+Count data has a property called heteroskedasticity, that generates a dependence between the variance and the mean. In particular, when the mean is low, the variance becomes very large. 
+
+This effect can be observed in the following plot:
+
+```{r}
+meanSdPlot(assay(my_dds))
+```
+
+With a normalization of the variance like the `rlog` or the `vst`, we can correct this dependence. You can choose which method is best for your data by looking at the meanSdPlots below. We choose to continue with the `rld`.
+
+```{r}
+my_rld = rlog(my_dds, blind=FALSE)
+meanSdPlot(assay(my_rld))
+```
+
+```{r}
+my_vst <- vst(my_dds, blind=FALSE)
+meanSdPlot(assay(my_vst))
+```
+
+### 3.2. Heatmap of the counts matrix
+
+Here we are plotting the genes with the highest normalized read counts. This function can be particularly interesting for plotting genes of interest later on in the analysis. 
+
+```{r}
+# To only select the 20 genes with top count number (normalized)
+select <- order(rowMeans(assay(my_rld, normalized=TRUE)),
+                decreasing=TRUE)[1:20]
+my_sample_col <- subset(samples, select = -c(wormCount))
+
+# To make the wormCount appear sorted
+sorted_samples <- rownames(my_sample_col[order(my_sample_col$histologicalStage), , drop=FALSE])
+
+# Heatmap
+pheatmap(assay(my_rld)[select, sorted_samples], cluster_rows=FALSE, show_rownames=TRUE,
+         cluster_cols=FALSE, annotation_col=my_sample_col)
+```
+
+### 3.3. Heatmap of the sample-to-sample distances
+
+This allows us to cluster samples and gives us an overview over similarities and dissimilarities between them. 
+
+```{r}
+sampleDists <- dist(t(assay(my_rld)))
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- my_rld$histologicalStage
+colnames(sampleDistMatrix) <- NULL
+
+colors <- colorRampPalette(rev(brewer.pal(9, "Blues")) )(255)
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         col=colors)
+```
+
+### 3.4. Principal component plot of the samples
+
+It is interesting to see how samples cluster according to all known conditions, to make sure there is no batch effect.
+
+In this example we see clear clustering according to the `histologicalStage` but not according to `wormCount`. This is good and means we have a balanced study design.
+
+```{r}
+plotPCA(my_rld, intgroup='histologicalStage')
+```
+
+```{r}
+plotPCA(my_rld, intgroup='wormCount')
+```
+
+#### Outliers
+From the PCA plot and the heatmap of the sample-to-sample distances, we can sometimes spot outliers and decide to remove them from the analysis. If this is the case, please go back to section *1.1. Filtering and formatting*, uncomment/edit the relevant code chunk and re-run everything.
+
+
+## 4. Differential expression analysis
+
+Run the differential expression analysis...
+
+```{r}
+my_dds <- DESeq(my_dds)
+```
+
+Capture results...
+```{r}
+my_res <- results(my_dds, contrast = c('histologicalStage', '8', '3')) # condition: stage 8 vs stage 3 (stage 3 is the control)
+```
+
+
+### 4.1. Log-fold change shrinkage for visualization and ranking
+
+This makes sure that the log fold change is scaled with respect to the mean read count, because the variance of genes with low mean count is very large. In other words, seeing a LFC of 10 in a gene that had medium expression level in the control means a lot more than seeing the same LFC in a gene with a base expression of almost 0.
+
+This can be visualized with an MA plot:
+
+```{r}
+plotMA(my_res, ylim=c(-5,5))
+```
+
+There are different methods for doing log-fold change shrinkage, like `apeglm()` or `ashr()`. In this example, the `apeglm()` shrinkage is too strong and creates some artifacts, so we go for `ashr()`.
+
+```{r, message=FALSE}
+#resultsNames(my_dds)
+my_resLFC <- lfcShrink(my_dds, coef="histologicalStage_8_vs_3", type="ashr")
+#my_resLFC_ordered <- my_resLFC[order(my_resLFC$padj),]
+#my_resLFC_ordered
+```
+
+Again check the MA plot:
+
+```{r}
+plotMA(my_resLFC, ylim=c(-5,5))
+```
+
+## 5. Results to nicer format & export
+
+Please choose your output file.
+
+```{r}
+df <- as.data.frame(my_res) %>%
+  rownames_to_column("gene")
+```
+
+```{r}
+output_file <- "C:/Users/celib/Desktop/DENMARK/DTU/3-SEMESTER/Special_Course/data/DESeq2/LFCS_low_worms_tophat_ashr.csv"
+
+write_csv(df, file=output_file)
+```
+
+
+
+## 6. Study genes of interest
+
+### 6.1. Heatmap of the counts matrix for genes of interest
+
+```{r}
+# Genes of interest
+goi <- c('esr1', 'LOC115555769', 'LOC115555766', 'LOC115556237', 'LOC115560668', 'LOC115549659', 'LOC115550447', 'igf1')
+
+# To annotate: get histologicalStage for each sample
+my_sample_col <- subset(samples, select = c(histologicalStage))
+
+
+# To make columns sorted by histologicalStage
+sorted_samples <- rownames(my_sample_col[order(my_sample_col$histologicalStage), , drop=FALSE])
+
+# Heatmap
+pheatmap(assay(my_rld, 
+               normalized=TRUE)[goi, sorted_samples], 
+         cluster_rows=FALSE, show_rownames=TRUE,
+         cluster_cols=FALSE, annotation_col=my_sample_col)
+```
+
+### 6.2. Counts plots
+
+### Example: estrogen receptors
+
+```{r}
+plotCounts(my_dds, gene='esr1', intgroup="histologicalStage")
+```
+
+More details on the differential expression... 
+
+```{r}
+df[df$gene == 'esr1',]
+```
+
