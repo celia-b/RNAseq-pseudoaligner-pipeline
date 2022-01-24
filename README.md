@@ -2,7 +2,7 @@
 
 This pipeline allows the user to process raw RNA-seq reads in an automatized fashion, producing a quantification that is ready for differential expression analysis. 
 
-<u>Basic structure of the pipeline</u>
+**Basic structure of the pipeline**
 Here is a breakdown of the pipeline structure and steps:
 
 1. Quality check of the raw reads & subsequent trimming. This program is not able to read the content of the quality report, so it performs trimming regardless, as trimming good quality reads leads to no significant change in them. 
@@ -16,14 +16,14 @@ Here is a breakdown of the pipeline structure and steps:
 Steps 1-4 can be manually cancelled if they have been run independently. For that, open the pipeline script and read the section with header _"README: User defined parameters"_.
 Furthermore, a DESeq2-based R notebook is provided with the main steps and code needed for basic DE analysis of the produced results.
 
-<u>Underlying tools>
+**Underlying tools**
 It is built around the following tools:
 
 - fastqc & multiqc: for quality control
 - trimommatic: for read trimming
 - kallisto: for rapid pseudoalignment of reads and quantification
 
-<u>Parallelization</u>
+**Parallelization**
 It does so parallelizing the samples, so runtime is relatively fast when compared to a sequential run. Because of memory limitations, no more than 20 samples can be processed simultaneously. Given that typical kallisto run on a 30M read sample takes <10 minutes, any experiment with <=20 samples will also take <10 minutes for kallisto. Extra samples will progressively increase the runtime. Further steps in the pipeline also increase runtime, with 40 samples taking around 25 minutes in total.
 
 
