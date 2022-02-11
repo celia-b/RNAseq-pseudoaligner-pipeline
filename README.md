@@ -39,39 +39,39 @@ _Note: it has been made possible for the pipeline to take trimmed reads from the
 RNAseq-project/  
 ├── raw_reads/  
 │&emsp;   ├── S100/  
-│&emsp;   │   ├── S100_1.fq.gz  
-│   │   ├── S100_2.fq.gz  
-│   │   ├── S100_forward_paired.fq.gz (optional, can also be in trimmed_reads/)  
-│   │   ├── S100_forward_unpaired.fq.gz (optional, can also be in trimmed_reads/)  
-│   │   ├── S100_reverse_paired.fq.gz (optional, can also be in trimmed_reads/)  
-│   │   └── S100_reverse_unpaired.fq.gz (optional, can also be in trimmed_reads/)  
-│   └── ...  
+│&emsp;   │&emsp;   ├── S100_1.fq.gz  
+│&emsp;   │&emsp;   ├── S100_2.fq.gz  
+│&emsp;   │&emsp;   ├── S100_forward_paired.fq.gz (optional, can also be in trimmed_reads/)  
+│&emsp;   │&emsp;   ├── S100_forward_unpaired.fq.gz (optional, can also be in trimmed_reads/)  
+│&emsp;   │&emsp;   ├── S100_reverse_paired.fq.gz (optional, can also be in trimmed_reads/)  
+│&emsp;   │&emsp;   └── S100_reverse_unpaired.fq.gz (optional, can also be in trimmed_reads/)  
+│&emsp;   └── ...  
 ├── trimmed_reads/     
-│   ├── S100/  
-│   │   ├── S100_forward_paired.fq.gz (optional, can also be in raw_reads/)  
-│   │   ├── S100_forward_unpaired.fq.gz (optional, can also be in raw_reads/)  
-│   │   ├── S100_reverse_paired.fq.gz (optional, can also be in raw_reads/)  
-│   │   └── S100_reverse_unpaired.fq.gz (optional, can also be in raw_reads/)  
-│   └── ...  
+│&emsp;   ├── S100/  
+│&emsp;   │&emsp;   ├── S100_forward_paired.fq.gz (optional, can also be in raw_reads/)  
+│&emsp;   │&emsp;   ├── S100_forward_unpaired.fq.gz (optional, can also be in raw_reads/)  
+│&emsp;   │&emsp;   ├── S100_reverse_paired.fq.gz (optional, can also be in raw_reads/)  
+│&emsp;   │&emsp;   └── S100_reverse_unpaired.fq.gz (optional, can also be in raw_reads/)  
+│&emsp;   └── ...  
 ├── QC/  
-│   ├── raw_reads/  
-│   │   ├── S100_1_fastqc.html  
-│   │   ├── S100_2_fastqc.zip  
-│   │   └── ...  
-│   └── trimmed_reads/  
-│       ├── S100_forward_paired_fastqc.html  
-│       ├── S100_forward_paired_fastqc.zip  
-│       └── ...  
+│&emsp;   ├── raw_reads/  
+│&emsp;   │&emsp;   ├── S100_1_fastqc.html  
+│&emsp;   │&emsp;   ├── S100_2_fastqc.zip  
+│&emsp;   │&emsp;   └── ...  
+│&emsp;   └── trimmed_reads/  
+│&emsp;       ├── S100_forward_paired_fastqc.html  
+│&emsp;       ├── S100_forward_paired_fastqc.zip  
+│&emsp;       └── ...  
 ├── transcriptome_file.fa.gz  
 ├── indexed_transcriptome  
 ├── translation_table.json  
 ├── quantification_kallisto/  
-│   ├── S100/  
-│   │   ├── abundance_aug.tsv  
-│   │   ├── abundance.tsv  
-│   │   ├── abundance.h5  
-│   │   └── run_info.json  
-│   └── ...  
+│&emsp;   ├── S100/  
+│&emsp;   │&emsp;   ├── abundance_aug.tsv  
+│&emsp;   │&emsp;   ├── abundance.tsv  
+│&emsp;   │&emsp;   ├── abundance.h5  
+│&emsp;   │&emsp;   └── run_info.json  
+│&emsp;   └── ...  
 ├── merged_samples.tsv  
 ├── kallisto.err  
 └── kallisto.log  
