@@ -38,8 +38,8 @@ _Note: it has been made possible for the pipeline to take trimmed reads from the
 
 RNAseq-project/  
 ├── raw_reads/  
-│   ├── S100/  
-│   │   ├── S100_1.fq.gz  
+│&emsp;   ├── S100/  
+│&emsp;   │   ├── S100_1.fq.gz  
 │   │   ├── S100_2.fq.gz  
 │   │   ├── S100_forward_paired.fq.gz (optional, can also be in trimmed_reads/)  
 │   │   ├── S100_forward_unpaired.fq.gz (optional, can also be in trimmed_reads/)  
