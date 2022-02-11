@@ -6,7 +6,7 @@ This pipeline allows the user to process raw RNA-seq data in an automatized fash
 
 Here is a breakdown of the pipeline structure and steps:
 
-1. Quality check of the raw reads & subsequent trimming. This program is not able to read the content of the quality report, so it performs trimming regardless, as trimming good quality reads leads to no significant change in them. 
+1. Quality check of the raw reads & subsequent trimming. This program is not able to read the content of the quality report, so it performs trimming regardless, as trimming good quality reads leads to no significant change in them. _Note: the trimming step doesn't currently work. Must be run separately_
 2. Quality check of the processed reads.
 3. Transcriptome download and indexing by kallisto.
 4. Creation of a transcript-to-gene translation table. We want to be able to connect transcript names with their genes of origin, and this is what this table does.
