@@ -30,7 +30,51 @@ It is built around the following tools:
 The pipeline runs each sample in parallel, so runtime is relatively fast when compared to a sequential run. Because of memory limitations, no more than 20 samples can be processed simultaneously. Given that typical kallisto run on a 30M read sample takes <10 minutes, any experiment with <=20 samples will also take <10 minutes for kallisto. Extra samples will progressively increase the runtime. Further steps in the pipeline also increase runtime, with 40 samples taking around 25 minutes in total.
 
 
+**Directory tree**
 
+The user provides a project directory, which must contain a folder called raw_reads/ containing the raw reads of each sample, each within their own folder (see diagram). The output of the pipeline is organized as shown in the diagram below, with folders for the QC, trimming and quantification with kallisto. Some files like the transcriptome, the index, the translation table, the final merged samples table and the logs live directly in the project folder.
+
+_Note: it has been made possible for the pipeline to take trimmed reads from the raw_reads/ folder, only because this was the original disposition of the files. However, when the pipeline runs the trimming itself, files go into the trimmed_reads/ folder. For future projects and if trimming is performed outside of the pipeline, it is suggested to put those files in the trimmed_reads/ folder, for obvious reasons._
+
+RNAseq-project/
+├── raw_reads/
+│   ├── S100/
+│   │   ├── S100_1.fq.gz
+│   │   ├── S100_2.fq.gz
+│   │   ├── S100_forward_paired.fq.gz (optional, can also be in trimmed_reads/)
+│   │   ├── S100_forward_unpaired.fq.gz (optional, can also be in trimmed_reads/)
+│   │   ├── S100_reverse_paired.fq.gz (optional, can also be in trimmed_reads/)
+│   │   └── S100_reverse_unpaired.fq.gz (optional, can also be in trimmed_reads/)
+│   └── ...
+├── trimmed_reads/   
+│   ├── S100/
+│   │   ├── S100_forward_paired.fq.gz (optional, can also be in raw_reads/)
+│   │   ├── S100_forward_unpaired.fq.gz (optional, can also be in raw_reads/)
+│   │   ├── S100_reverse_paired.fq.gz (optional, can also be in raw_reads/)
+│   │   └── S100_reverse_unpaired.fq.gz (optional, can also be in raw_reads/)
+│   └── ...
+├── QC/
+│   ├── raw_reads/
+│   │   ├── S100_1_fastqc.html
+│   │   ├── S100_2_fastqc.zip
+│   │   └── ...
+│   └── trimmed_reads/
+│       ├── S100_forward_paired_fastqc.html
+│       ├── S100_forward_paired_fastqc.zip
+│       └── ...
+├── transcriptome_file.fa.gz
+├── indexed_transcriptome
+├── translation_table.json
+├── quantification_kallisto/
+│   ├── S100/
+│   │   ├── abundance_aug.tsv
+│   │   ├── abundance.tsv
+│   │   ├── abundance.h5
+│   │   └── run_info.json
+│   └── ...
+├── merged_samples.tsv
+├── kallisto.err
+└── kallisto.log
 
 
 
