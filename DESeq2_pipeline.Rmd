@@ -144,7 +144,7 @@ This allows us to cluster samples and gives us an overview over similarities and
 ```{r}
 sampleDists <- dist(t(assay(my_rld)))
 sampleDistMatrix <- as.matrix(sampleDists)
-rownames(sampleDistMatrix) <- paste(colnames(my_rld), ' (', my_rld$histologicalStage, ')', sep="")
+rownames(sampleDistMatrix) <- my_rld$histologicalStage
 colnames(sampleDistMatrix) <- NULL
 
 colors <- colorRampPalette(rev(brewer.pal(9, "Blues")) )(255)
@@ -211,20 +211,6 @@ Again check the MA plot:
 plotMA(my_resLFC, ylim=c(-5,5))
 ```
 
-### 4.2. Volcano plot of the results
-
-```{r}
-EnhancedVolcano(my_resLFC,
-    lab = rownames(my_resLFC),
-    x = 'log2FoldChange',
-    y = 'padj',
-    ylim = c(0, 25),
-    xlim = c(-7.5, 5),
-    title = "Volcano plot",
-    subtitle = "Differential Gene Expression in Oocyte Development of Cod")
-```
-
-
 ## 5. Results to nicer format & export
 
 Please choose your output file.
@@ -248,7 +234,7 @@ write_csv(df, file=output_file)
 
 ```{r}
 # Genes of interest
-goi <- c('esr1', 'fst', 'igf1', 'ghr')
+goi <- c('esr1', 'LOC115555769', 'LOC115555766', 'LOC115556237', 'LOC115560668', 'LOC115549659', 'LOC115550447', 'igf1')
 
 # To annotate: get histologicalStage for each sample
 my_sample_col <- subset(samples, select = c(histologicalStage))
